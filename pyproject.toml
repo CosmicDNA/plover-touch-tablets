@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plover-my-minimal-tool"
+version = "0.1.0"
+dependencies = ["plover>=5.0.0"]
+
+[project.entry-points."plover.gui.qt.tool"]
+my_tool = "plover_my_minimal_tool.tool:Main"
