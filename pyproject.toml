@@ -5,7 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "plover-my-minimal-tool"
 version = "0.0.0"
-dependencies = ["plover>=5.0.0"]
+dependencies = [
+    "plover>=5.0.0",
+    "PySide6"
+]
 
 [project.optional-dependencies]
 test = ["pytest"]
