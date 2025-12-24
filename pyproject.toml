@@ -4,8 +4,92 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plover-my-minimal-tool"
-version = "0.1.0"
+version = "0.0.0"
 dependencies = ["plover>=5.0.0"]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+dev = [
+    "plover-my-minimal-tool[test]", # Includes all dependencies from the 'test' group,
+    "pre-commit",                   # For managing pre-commit hooks
+    "build",
+    "bump-my-version",
+    "twine",
+    "ruff",
+]
 
 [project.entry-points."plover.gui.qt.tool"]
 my_tool = "plover_my_minimal_tool.tool:Main"
+
+[project.entry-points."plover.extension"]
+my_extension = "plover_my_minimal_tool.extension:Extension"
+
+[tool.bumpversion]
+current_version = "0.0.0"
+parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
+serialize = ["{major}.{minor}.{patch}"]
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+ignore_missing_files = false
+tag = true
+sign_tags = true
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+allow_dirty = false
+commit = true
+message = "Bump version: {current_version} → {new_version}"
+moveable_tags = []
+commit_args = ""
+setup_hooks = []
+pre_commit_hooks = []
+post_commit_hooks = []
+
+[tool.ruff]
+line-length = 149
+target-version = "py311"
+
+[tool.ruff.lint]
+# Enable Pyflakes (F), pycodestyle (E, W), isort (I)
+# Enable many common Pylint (PL), flake8-bugbear (B), flake8-comprehensions (C4), etc. rules
+select = [
+    "F",
+    "E",
+    "W",
+    "I",
+    "N",
+    "D",   # Core flake8, isort, pep8-naming, pydocstyle
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "A",   # flake8-builtins
+    "C4",  # flake8-comprehensions
+    "T20", # flake8-print (T201 for print, T203 for pprint)
+    "SIM", # flake8-simplify
+    "PTH", # flake8-use-pathlib
+    # "PL", # Pylint
+    # "TRY", # tryceratops
+]
+ignore = [
+    # Ignore common missing docstring errors for now
+    "D100", # Missing docstring in public module
+    "D101", # Missing docstring in public class
+    "D102", # Missing docstring in public method
+    "D103", # Missing docstring in public function
+    "D104", # Missing docstring in public package
+    "D107", # Missing docstring in `__init__`
+    "D203", # 1 blank line required before class docstring
+    "D213", # Multi-line docstring closing quotes should be on a separate line
+    "D401", # First line of docstring should be in imperative mood
+    "N803", # Function name should be lowercase
+    "N806", # Variable in function should be lowercase
+]
+# mccabe (cyclomatic complexity)
+# mccabe.max-complexity = 10 # Default is 10, adjust as needed
+
+[tool.ruff.format]
+quote-style = "double"            # Black default
+indent-style = "space"
+skip-magic-trailing-comma = false # Black default
+line-ending = "auto"

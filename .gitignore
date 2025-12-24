@@ -1,3 +1,7 @@
 .venv/
 build/
-*.egg-info/
+plover_my_minimal_tool.egg-info/
+.vscode
+.ruff_cache/
+.pytest_cache/
+__pycache__/
