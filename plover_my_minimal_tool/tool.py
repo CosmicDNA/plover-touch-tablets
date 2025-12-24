@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from plover.engine import StenoEngine
 from plover.gui_qt.tool import Tool
 from plover.oslayer.config import ASSETS_DIR
 
@@ -17,22 +18,22 @@ class Main(Tool):
 
     _engine: ExtendedStenoEngine
 
-    def __init__(self, engine: ExtendedStenoEngine):
+    def __init__(self, engine: StenoEngine):
         super().__init__(engine)
+        self._engine = ExtendedStenoEngine(engine)
         log.info("Tool initialised")
 
         if hasattr(engine, "my_minimal_extension"):
-            self.extension = engine.my_minimal_extension
+            self.extension = self._engine.my_minimal_extension
             log.info("Tool successfully connected to Extension!")
         else:
             log.warning("Extension not found. Is the plugin enabled?")
         # Your GUI initialization here
 
-        self.signals = [Signal("stroked", self), Signal("translated", self)]
+        self._engine.signals = [Signal("stroked"), Signal("translated")]
 
         # Example: Connect to stroke signals
-        for signal in self.signals:
-            self._engine.hook_connect(signal.hook, signal.callback)
+        self._engine.connect_hooks(self)
 
     def on_stroked(self, stroke):
         # Minimal example: just log strokes
@@ -43,6 +44,5 @@ class Main(Tool):
             log.info(f"Translated: {new}")
 
     def closeEvent(self, event):  # noqa: N802
-        for signal in self.signals:
-            self._engine.hook_disconnect(signal.hook, signal.callback)
+        self._engine.disconnect_hooks(self)
         super().closeEvent(event)
