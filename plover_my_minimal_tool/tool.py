@@ -1,6 +1,7 @@
 import threading
 from io import BytesIO
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import qrcode
 import requests
@@ -11,8 +12,12 @@ from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QLabel, QVBoxLayout
 
+from plover_my_minimal_tool.config import BASE_WORKER_URL, CONNECT_SLUG, INITIATE_SLUG, SESSION_SLUG, TOKEN_PARAM
 from plover_my_minimal_tool.extended_engine import ExtendedStenoEngine
 from plover_my_minimal_tool.get_logger import get_logger
+
+if TYPE_CHECKING:
+    from plover_my_minimal_tool.extension import Extension
 
 log = get_logger("Tool")
 
@@ -24,6 +29,7 @@ class Main(Tool):
 
     _engine: ExtendedStenoEngine
     qr: "QRCode"
+    extension: "Extension"
 
     def __init__(self, engine: StenoEngine):
         super().__init__(engine)
@@ -48,21 +54,25 @@ class Main(Tool):
 
 def process_data(main_tool: Main):
     try:
-        res = requests.post("https://relay.stenography.cosmicdna.co.uk/session/initiate", timeout=10)
+        res = requests.post(f"https://{BASE_WORKER_URL}/{SESSION_SLUG}/{INITIATE_SLUG}", timeout=10)
         response: dict = res.json()
     except Exception:
         log.exception("Request failed")
     else:
-        protocol, sessionId, pcConnectionToken, tabletConnectionToken = response.values()
+        protocol = response["protocol"]
+        sessionId = response["sessionId"]
+        pcConnectionToken = response["pcConnectionToken"]
+        tabletConnectionToken = response["tabletConnectionToken"]
         tokens = [pcConnectionToken, tabletConnectionToken]
 
-        connection_strings = [f"{protocol}://relay.stenography.cosmicdna.co.uk/session/{sessionId}/connect?token={token}" for token in tokens]
+        connection_strings = [f"{protocol}://{BASE_WORKER_URL}/{SESSION_SLUG}/{sessionId}/{CONNECT_SLUG}?{TOKEN_PARAM}={token}" for token in tokens]
 
         log.info(f"Pc connection string is {connection_strings[0]}")
         log.info(f"Tablet connection string is {connection_strings[1]}")
 
         if main_tool:
             main_tool.qr.qr_ready.emit(connection_strings[1])
+            main_tool.extension.connect_websocket(connection_strings[0])
 
 
 class QRCode(QObject):
