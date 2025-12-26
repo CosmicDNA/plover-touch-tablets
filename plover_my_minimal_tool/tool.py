@@ -12,7 +12,7 @@ from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QLabel, QVBoxLayout
 
-from plover_my_minimal_tool.config import BASE_WORKER_URL, CONNECT_SLUG, INITIATE_SLUG, JOIN_SLUG, SESSION_SLUG, TOKEN_PARAM
+from plover_my_minimal_tool.config import BASE_WORKER_URL, CONNECT_SLUG, INITIATE_SLUG, JOIN_SLUG, PROTOCOL, SESSION_SLUG, TOKEN_PARAM
 from plover_my_minimal_tool.extended_engine import ExtendedStenoEngine
 from plover_my_minimal_tool.get_logger import get_logger
 
@@ -54,7 +54,7 @@ class Main(Tool):
 
 def process_data(main_tool: Main):
     try:
-        res = requests.post(f"https://{BASE_WORKER_URL}/{SESSION_SLUG}/{INITIATE_SLUG}", timeout=10)
+        res = requests.post(f"{PROTOCOL}//{BASE_WORKER_URL}/{SESSION_SLUG}/{INITIATE_SLUG}", timeout=10)
         response: dict = res.json()
     except Exception:
         log.exception("Request failed")
@@ -66,7 +66,7 @@ def process_data(main_tool: Main):
         connection_infos = [(pcConnectionToken, CONNECT_SLUG), (tabletConnectionToken, JOIN_SLUG)]
 
         connection_strings = [
-            f"{protocol}://{BASE_WORKER_URL}/{SESSION_SLUG}/{sessionId}/{connection_info[1]}?{TOKEN_PARAM}={connection_info[0]}"
+            f"{protocol}//{BASE_WORKER_URL}/{SESSION_SLUG}/{sessionId}/{connection_info[1]}?{TOKEN_PARAM}={connection_info[0]}"
             for connection_info in connection_infos
         ]
 
