@@ -1,5 +1,7 @@
+import json
 from importlib.metadata import metadata
 
+from nacl_middleware import MailBox
 from plover.engine import StenoEngine
 from websocket import WebSocketApp
 
@@ -23,7 +25,7 @@ class Extension:
 
         self.engine.signals = [Signal("stroked"), Signal("translated")]
         self._config = ClientConfig(SERVER_CONFIG_FILE)  # reload the configuration when the server is restarted
-        self.tablets_private_keys = {}
+        self.mail_boxes: dict[int, MailBox] = {}
 
     def on_stroked(self, stroke):
         # Minimal example: just log strokes
@@ -45,15 +47,24 @@ class Extension:
     def connect_websocket(self, connection_string):
         # mail_box = MailBox(self._config.private_key, "tablet_public_key")
 
-        def on_message(ws, message: dict):
-            log.info(f"Received: {message}")
+        def on_message(ws, message_string: str):
+            message: dict = json.loads(message_string)
+            log.debug(f"Received: {message}")
             msg_type = message.get("type")
             if msg_type == "tablet_connected":
                 tablet_id = message.get("id")
                 public_key = message.get("publicKey")
-                self.tablets_private_keys[tablet_id] = public_key
+                self.mail_boxes[tablet_id] = MailBox(self._config.private_key, public_key)
+                return
 
-            log.info(self.tablets_private_keys)
+            from_data: dict = message.get("from")
+            log.debug(f"From is {from_data}")
+            if from_data and from_data.get("type") == "tablet":
+                payload = message.get("payload")
+                log.debug(f"Payload is: {payload}")
+                tablet_id = from_data.get("id")
+                log.debug(f"Tablet ID is: {tablet_id}")
+                # decrypted_payload = self.mail_boxes[tablet_id].unbox(payload)
 
         def on_error(ws, error):
             log.error(f"Error: {error}")
