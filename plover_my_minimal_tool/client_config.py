@@ -6,8 +6,11 @@ from pathlib import Path
 from nacl.encoding import HexEncoder
 from nacl.public import PrivateKey
 from nacl_middleware import Nacl
-from plover import log
 from plover.oslayer.config import CONFIG_DIR
+
+from plover_my_minimal_tool.get_logger import get_logger
+
+log = get_logger("ClientConfig")
 
 
 class ClientConfig:
@@ -45,8 +48,8 @@ class ClientConfig:
                         data = other_data
                         keys_found = True
                         log.debug(f"Loaded keys from {other_config_path}")
-            except Exception as e:
-                log.warning(f"Error reading {other_config_path}: {e}")
+            except Exception:
+                log.exception(f"Error reading {other_config_path}:")
 
         # If not found, use our own config file
         if not keys_found:
@@ -58,8 +61,8 @@ class ClientConfig:
                         if "private_key" in data and "public_key" in data:
                             keys_found = True
                             log.debug(f"Loaded keys from {my_config_path}")
-                except Exception as e:
-                    log.warning(f"Error reading {my_config_path}: {e}")
+                except Exception:
+                    log.exception(f"Error reading {my_config_path}:")
 
             if not keys_found:
                 log.info("No existing keys found. Generating new keys...")
@@ -72,6 +75,5 @@ class ClientConfig:
                     dump(data, config_file, indent=2)
 
         # Assign values to class attributes
-        self.ssl = data.get("ssl")
         self.private_key = PrivateKey(data["private_key"], HexEncoder)
         self.public_key = data["public_key"]
