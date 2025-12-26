@@ -71,8 +71,8 @@ select = [
     "T20", # flake8-print (T201 for print, T203 for pprint)
     "SIM", # flake8-simplify
     "PTH", # flake8-use-pathlib
-    # "PL", # Pylint
-    # "TRY", # tryceratops
+    "PL",  # Pylint
+    "TRY", # tryceratops
 ]
 ignore = [
     # Ignore common missing docstring errors for now
