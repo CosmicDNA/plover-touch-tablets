@@ -12,7 +12,7 @@ from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QLabel, QVBoxLayout
 
-from plover_my_minimal_tool.config import BASE_WORKER_URL, CONNECT_SLUG, INITIATE_SLUG, SESSION_SLUG, TOKEN_PARAM
+from plover_my_minimal_tool.config import BASE_WORKER_URL, CONNECT_SLUG, INITIATE_SLUG, JOIN_SLUG, SESSION_SLUG, TOKEN_PARAM
 from plover_my_minimal_tool.extended_engine import ExtendedStenoEngine
 from plover_my_minimal_tool.get_logger import get_logger
 
@@ -63,9 +63,12 @@ def process_data(main_tool: Main):
         sessionId = response["sessionId"]
         pcConnectionToken = response["pcConnectionToken"]
         tabletConnectionToken = response["tabletConnectionToken"]
-        tokens = [pcConnectionToken, tabletConnectionToken]
+        connection_infos = [(pcConnectionToken, CONNECT_SLUG), (tabletConnectionToken, JOIN_SLUG)]
 
-        connection_strings = [f"{protocol}://{BASE_WORKER_URL}/{SESSION_SLUG}/{sessionId}/{CONNECT_SLUG}?{TOKEN_PARAM}={token}" for token in tokens]
+        connection_strings = [
+            f"{protocol}://{BASE_WORKER_URL}/{SESSION_SLUG}/{sessionId}/{connection_info[1]}?{TOKEN_PARAM}={connection_info[0]}"
+            for connection_info in connection_infos
+        ]
 
         log.info(f"Pc connection string is {connection_strings[0]}")
         log.info(f"Tablet connection string is {connection_strings[1]}")
