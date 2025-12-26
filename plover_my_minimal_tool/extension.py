@@ -1,4 +1,3 @@
-import json
 from importlib.metadata import metadata
 
 from plover.engine import StenoEngine
@@ -47,8 +46,6 @@ class Extension:
         # mail_box = MailBox(self._config.private_key, "tablet_public_key")
 
         def on_message(ws, message: dict):
-            if isinstance(message, str):
-                message = json.loads(message)
             log.info(f"Received: {message}")
             msg_type = message.get("type")
             if msg_type == "tablet_connected":
