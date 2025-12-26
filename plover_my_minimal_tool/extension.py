@@ -1,5 +1,6 @@
 import json
 from importlib.metadata import metadata
+from typing import Any
 
 from nacl_middleware import MailBox
 from plover.engine import StenoEngine
@@ -47,14 +48,26 @@ class Extension:
     def connect_websocket(self, connection_string):
         # mail_box = MailBox(self._config.private_key, "tablet_public_key")
 
-        def on_message(ws, message_string: str):
-            message: dict = json.loads(message_string)
+        def on_message(ws: WebSocketApp, message: Any):
+            if isinstance(message, str):
+                message: dict = json.loads(message)
             log.debug(f"Received: {message}")
             msg_type = message.get("type")
             if msg_type == "tablet_connected":
                 tablet_id = message.get("id")
                 public_key = message.get("publicKey")
                 self.mail_boxes[tablet_id] = MailBox(self._config.private_key, public_key)
+                ws.send(
+                    json.dumps(
+                        {
+                            "to": {"type": "tablet", "id": tablet_id},
+                            "payload": {
+                                "message": "Here is my the public key for you to privately communicate with me...",
+                                "public_key": self._config.public_key,
+                            },
+                        }
+                    )
+                )
                 return
 
             from_data: dict = message.get("from")
