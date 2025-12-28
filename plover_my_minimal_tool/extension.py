@@ -79,8 +79,8 @@ class Extension:
                 log.debug(f"Tablet ID is: {tablet_id}")
                 # decrypted_payload = self.mail_boxes[tablet_id].unbox(payload)
 
-        def on_error(ws, error):
-            log.error(f"Error: {error}")
+        def on_error(ws, error: Exception):
+            log.exception(f"Error: {error}")
 
         def on_close(ws, close_status_code, close_msg):
             log.info("Closed")
