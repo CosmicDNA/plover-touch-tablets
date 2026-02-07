@@ -84,7 +84,15 @@ class Extension:
                 log.debug(f"Tablet ID is: {tablet_id}")
                 decrypted_payload = self.mail_boxes[tablet_id].unbox(payload)
                 log.debug(f"Decrypted payload is: {decrypted_payload}")
+
                 # Decrypted payload is: {'stroke': ['-R', '-B', '-G']}
+                if "stroke" in decrypted_payload:
+                    steno_keys = decrypted_payload["stroke"]
+                    if isinstance(steno_keys, list):
+                        try:
+                            self.engine._engine._machine_stroke_callback(steno_keys)
+                        except Exception:
+                            log.exception("Failed to process stroke")
 
         def on_error(ws, error: Exception):
             log.exception(f"Error: {error}")
