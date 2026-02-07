@@ -76,12 +76,15 @@ class Extension:
 
             from_data: dict = message.get("from")
             log.debug(f"From is {from_data}")
+            log.debug(f"Message is:\n{json.dumps(message, indent=2)}")
             if from_data and from_data.get("type") == "tablet":
                 payload = message.get("payload")
                 log.debug(f"Payload is: {payload}")
                 tablet_id = from_data.get("id")
                 log.debug(f"Tablet ID is: {tablet_id}")
-                # decrypted_payload = self.mail_boxes[tablet_id].unbox(payload)
+                decrypted_payload = self.mail_boxes[tablet_id].unbox(payload)
+                log.debug(f"Decrypted payload is: {decrypted_payload}")
+                # Decrypted payload is: {'stroke': ['-R', '-B', '-G']}
 
         def on_error(ws, error: Exception):
             log.exception(f"Error: {error}")
