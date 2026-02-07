@@ -33,7 +33,7 @@ log = get_logger("Tool")
 
 
 class Main(Tool):
-    TITLE = "Connection Settings"
+    TITLE = "Tablet QR"
     ICON = str(Path(ASSETS_DIR) / "plover.png")
     ROLE = "connection_settings"
 

@@ -11,6 +11,7 @@ from plover_my_minimal_tool.client_config import ClientConfig
 from plover_my_minimal_tool.config import BASE_WORKER_URL, PROTOCOL
 from plover_my_minimal_tool.extended_engine import ExtendedStenoEngine
 from plover_my_minimal_tool.get_logger import get_logger
+from plover_my_minimal_tool.lookup import lookup
 from plover_my_minimal_tool.signal import Signal
 
 log = get_logger("Extension")
@@ -75,15 +76,16 @@ class Extension:
                 return
 
             from_data: dict = message.get("from")
-            log.debug(f"From is {from_data}")
-            log.debug(f"Message is:\n{json.dumps(message, indent=2)}")
+            # log.debug(f"From is {from_data}")
+            # log.debug(f"Message is:\n{json.dumps(message, indent=2)}")
             if from_data and from_data.get("type") == "tablet":
                 payload = message.get("payload")
-                log.debug(f"Payload is: {payload}")
+                # log.debug(f"Payload is: {payload}")
                 tablet_id = from_data.get("id")
-                log.debug(f"Tablet ID is: {tablet_id}")
-                decrypted_payload = self.mail_boxes[tablet_id].unbox(payload)
-                log.debug(f"Decrypted payload is: {decrypted_payload}")
+                # log.debug(f"Tablet ID is: {tablet_id}")
+                tablet_mail_box = self.mail_boxes.get(tablet_id)
+                decrypted_payload = tablet_mail_box.unbox(payload)
+                # log.debug(f"Decrypted payload is: {decrypted_payload}")
 
                 # Decrypted payload is: {'stroke': ['-R', '-B', '-G']}
                 if "stroke" in decrypted_payload:
@@ -93,6 +95,25 @@ class Extension:
                             self.engine._engine._machine_stroke_callback(steno_keys)
                         except Exception:
                             log.exception("Failed to process stroke")
+
+                if "lookup" in decrypted_payload:
+                    text_to_lookup = decrypted_payload["lookup"]
+                    log.debug(f"Lookup request for: {text_to_lookup}")
+                    if isinstance(text_to_lookup, str):
+                        try:
+                            steno_options_per_word = lookup(self.engine._engine, text_to_lookup)
+                            # ws.send_text(tablet_mail_box.box({"lookup": steno_options_per_word}))
+                            ws.send(
+                                json.dumps(
+                                    {
+                                        "to": {"type": "tablet", "id": tablet_id},
+                                        "payload": tablet_mail_box.box({"lookup": steno_options_per_word}),
+                                    }
+                                )
+                            )
+                            # log.info("Sent!")
+                        except Exception:
+                            log.exception("Failed to process lookup request")
 
         def on_error(ws, error: Exception):
             log.exception(f"Error: {error}")
