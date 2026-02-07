@@ -1,4 +1,5 @@
 import json
+from collections.abc import Callable
 from importlib.metadata import metadata
 from typing import Any
 
@@ -45,7 +46,7 @@ class Extension:
     def stop(self):
         self.engine.disconnect_hooks(self)
 
-    def connect_websocket(self, connection_string):
+    def connect_websocket(self, connection_string: str, on_tablet_connected: Callable[[], None] | None = None):
         # mail_box = MailBox(self._config.private_key, "tablet_public_key")
 
         def on_message(ws: WebSocketApp, message: Any):
@@ -56,6 +57,7 @@ class Extension:
             if msg_type == "tablet_connected":
                 tablet_id = message.get("id")
                 public_key = message.get("publicKey")
+                log.debug(f"Private key: {self._config.private_key} and public key: {public_key}")
                 self.mail_boxes[tablet_id] = MailBox(self._config.private_key, public_key)
                 ws.send(
                     json.dumps(
@@ -68,6 +70,8 @@ class Extension:
                         }
                     )
                 )
+                if on_tablet_connected:
+                    on_tablet_connected()
                 return
 
             from_data: dict = message.get("from")

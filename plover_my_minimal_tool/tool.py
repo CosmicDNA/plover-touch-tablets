@@ -12,7 +12,17 @@ from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QLabel, QVBoxLayout
 
-from plover_my_minimal_tool.config import BASE_WORKER_URL, CONNECT_SLUG, INITIATE_SLUG, JOIN_SLUG, PROTOCOL, SESSION_SLUG, TOKEN_PARAM
+from plover_my_minimal_tool.config import (
+    BASE_WORKER_URL,
+    CONNECT_SLUG,
+    INGRESS_BASE_WORKER_URL,
+    INGRESS_PROTOCOL,
+    INITIATE_SLUG,
+    JOIN_SLUG,
+    PROTOCOL,
+    SESSION_SLUG,
+    TOKEN_PARAM,
+)
 from plover_my_minimal_tool.extended_engine import ExtendedStenoEngine
 from plover_my_minimal_tool.get_logger import get_logger
 
@@ -30,9 +40,11 @@ class Main(Tool):
     _engine: ExtendedStenoEngine
     qr: "QRCode"
     extension: "Extension"
+    tablet_connected = Signal()
 
     def __init__(self, engine: StenoEngine):
         super().__init__(engine)
+        self.tablet_connected.connect(self.close)
         self._engine = ExtendedStenoEngine(engine)
         log.info("Tool initialised")
 
@@ -59,14 +71,19 @@ def process_data(main_tool: Main):
     except Exception:
         log.exception("Request failed")
     else:
-        protocol = response["protocol"]
+        # protocol = response["protocol"]
         sessionId = response["sessionId"]
         pcConnectionToken = response["pcConnectionToken"]
         tabletConnectionToken = response["tabletConnectionToken"]
-        connection_infos = [(pcConnectionToken, CONNECT_SLUG), (tabletConnectionToken, JOIN_SLUG)]
+        connection_infos = [
+            (pcConnectionToken, CONNECT_SLUG, PROTOCOL, BASE_WORKER_URL),
+            (tabletConnectionToken, JOIN_SLUG, INGRESS_PROTOCOL, INGRESS_BASE_WORKER_URL),
+        ]
 
         connection_strings = [
-            f"{protocol}//{BASE_WORKER_URL}/{SESSION_SLUG}/{sessionId}/{connection_info[1]}?{TOKEN_PARAM}={connection_info[0]}"
+            f"{connection_info[2].replace('http', 'ws')}//{connection_info[3]}/{SESSION_SLUG}/{sessionId}/{connection_info[1]}?{TOKEN_PARAM}={
+                connection_info[0]
+            }"
             for connection_info in connection_infos
         ]
 
@@ -75,7 +92,7 @@ def process_data(main_tool: Main):
 
         if main_tool:
             main_tool.qr.qr_ready.emit(connection_strings[1])
-            main_tool.extension.connect_websocket(connection_strings[0])
+            main_tool.extension.connect_websocket(connection_strings[0], on_tablet_connected=main_tool.tablet_connected.emit)
 
 
 class QRCode(QObject):
