@@ -8,7 +8,7 @@ from plover.engine import StenoEngine
 from websocket import WebSocketApp
 
 from plover_my_minimal_tool.client_config import ClientConfig
-from plover_my_minimal_tool.config import BASE_WORKER_URL, PROTOCOL
+from plover_my_minimal_tool.config import BASE_WORKER_FQDN, WORKER_PROTOCOL
 from plover_my_minimal_tool.extended_engine import ExtendedStenoEngine
 from plover_my_minimal_tool.get_logger import get_logger
 from plover_my_minimal_tool.lookup import lookup
@@ -127,7 +127,7 @@ class Extension:
         meta = metadata("plover-my-minimal-tool")
         header = {
             "User-Agent": f"{meta['Name']}/{meta['Version']}",
-            "Origin": f"{PROTOCOL}//{BASE_WORKER_URL}",
+            "Origin": f"{WORKER_PROTOCOL}//{BASE_WORKER_FQDN}",
             "X-Public-Key": self._config.public_key,
         }
         log.info(header)

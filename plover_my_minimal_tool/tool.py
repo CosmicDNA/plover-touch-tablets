@@ -14,15 +14,14 @@ from PySide6.QtWidgets import QLabel, QVBoxLayout
 
 from plover_my_minimal_tool.config import (
     APP_URL,
-    BASE_WORKER_URL,
+    BASE_WORKER_FQDN,
     CONNECT_SLUG,
-    INGRESS_BASE_WORKER_URL,
-    INGRESS_PROTOCOL,
     INITIATE_SLUG,
     JOIN_SLUG,
-    PROTOCOL,
+    RELAY_PARAM,
     SESSION_SLUG,
     TOKEN_PARAM,
+    WORKER_PROTOCOL,
 )
 from plover_my_minimal_tool.encoding import encode_raw_url
 from plover_my_minimal_tool.extended_engine import ExtendedStenoEngine
@@ -68,7 +67,7 @@ class Main(Tool):
 
 def process_data(main_tool: Main):
     try:
-        res = requests.post(f"{PROTOCOL}//{BASE_WORKER_URL}/{SESSION_SLUG}/{INITIATE_SLUG}", timeout=10)
+        res = requests.post(f"{WORKER_PROTOCOL}//{BASE_WORKER_FQDN}/{SESSION_SLUG}/{INITIATE_SLUG}", timeout=10)
         response: dict = res.json()
     except Exception:
         log.exception("Request failed")
@@ -78,8 +77,8 @@ def process_data(main_tool: Main):
         pcConnectionToken = response["pcConnectionToken"]
         tabletConnectionToken = response["tabletConnectionToken"]
         connection_infos = [
-            (pcConnectionToken, CONNECT_SLUG, PROTOCOL, BASE_WORKER_URL),
-            (tabletConnectionToken, JOIN_SLUG, INGRESS_PROTOCOL, INGRESS_BASE_WORKER_URL),
+            (pcConnectionToken, CONNECT_SLUG, WORKER_PROTOCOL, BASE_WORKER_FQDN),
+            (tabletConnectionToken, JOIN_SLUG, WORKER_PROTOCOL, BASE_WORKER_FQDN),
         ]
 
         connection_strings = [
@@ -94,7 +93,7 @@ def process_data(main_tool: Main):
         tablet_connection_string = connection_strings[1]
         log.info(f"Tablet connection string is {tablet_connection_string}")
 
-        final_qr_url = f"{APP_URL}/?relay={encode_raw_url(tablet_connection_string)}"
+        final_qr_url = f"{APP_URL}/?{RELAY_PARAM}={encode_raw_url(tablet_connection_string)}"
 
         log.info(final_qr_url)
 
