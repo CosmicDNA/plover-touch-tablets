@@ -1,7 +1,9 @@
 .venv/
 build/
+dist/
 plover_touch_tablets.egg-info/
 .vscode
 .ruff_cache/
 .pytest_cache/
 __pycache__/
+.envrc
