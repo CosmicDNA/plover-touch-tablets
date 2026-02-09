@@ -1,4 +1,4 @@
-# Touch Tablets Plover Plugin
+# Plover Touch Tablets Plugin
 
 This Plover plugin enables seamless integration between Plover and touch-based steno keyboard applications running on tablets. It establishes a secure WebSocket connection, allowing your tablet to function as a steno machine for Plover.
 
@@ -15,7 +15,7 @@ This plugin is designed to be compatible with the **[Touch Steno Keyboard](https
 ## Installation
 
 1. Open Plover.
-2. Install `touch-tablets` plugin via either plover_console CLI or plugin manager.
+2. Install `plover-touch-tablets` plugin via either plover_console CLI or plugin manager.
 3. Restart Plover.
 
 ## Usage

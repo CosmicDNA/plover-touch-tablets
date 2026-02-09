@@ -1,4 +1,4 @@
-# from touch_tablets.debug import is_debug_mode
+# from plover_touch_tablets.debug import is_debug_mode
 
 # if is_debug_mode():
 #     PROTOCOL = "http:"

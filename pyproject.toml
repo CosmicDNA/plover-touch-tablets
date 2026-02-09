@@ -3,8 +3,11 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "touch-tablets"
+name = "plover-touch-tablets"
 version = "0.0.0"
+description = "Touch Tablets Plover Plugin"
+readme = "README.md"
+keywords = ["plover_plugin"]
 dependencies = [
     "plover>=5.0.0",
     "PySide6",
@@ -17,7 +20,7 @@ dependencies = [
 test = ["pytest"]
 
 dev = [
-    "touch-tablets[test]", # Includes all dependencies from the 'test' group,
+    "plover-touch-tablets[test]", # Includes all dependencies from the 'test' group,
     "pre-commit",                   # For managing pre-commit hooks
     "build",
     "bump-my-version",
@@ -26,10 +29,10 @@ dev = [
 ]
 
 [project.entry-points."plover.gui.qt.tool"]
-tablet_qr = "touch_tablets.tool:Main"
+tablet_qr = "plover_touch_tablets.tool:Main"
 
 [project.entry-points."plover.extension"]
-touch_tablets = "touch_tablets.extension:Extension"
+plover_touch_tablets = "plover_touch_tablets.extension:Extension"
 
 [tool.bumpversion]
 current_version = "0.0.0"

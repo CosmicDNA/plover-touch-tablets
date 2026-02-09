@@ -12,7 +12,7 @@ from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QLabel, QVBoxLayout
 
-from touch_tablets.config import (
+from plover_touch_tablets.config import (
     APP_URL,
     BASE_WORKER_FQDN,
     CONNECT_SLUG,
@@ -23,12 +23,12 @@ from touch_tablets.config import (
     TOKEN_PARAM,
     WORKER_PROTOCOL,
 )
-from touch_tablets.encoding import encode_raw_url
-from touch_tablets.extended_engine import ExtendedStenoEngine
-from touch_tablets.get_logger import get_logger
+from plover_touch_tablets.encoding import encode_raw_url
+from plover_touch_tablets.extended_engine import ExtendedStenoEngine
+from plover_touch_tablets.get_logger import get_logger
 
 if TYPE_CHECKING:
-    from touch_tablets.extension import Extension
+    from plover_touch_tablets.extension import Extension
 
 log = get_logger("Tool")
 

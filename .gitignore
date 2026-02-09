@@ -1,6 +1,6 @@
 .venv/
 build/
-touch_tablets.egg-info/
+plover_touch_tablets.egg-info/
 .vscode
 .ruff_cache/
 .pytest_cache/

@@ -10,12 +10,12 @@ from plover.gui_qt.paper_tape import TapeModel
 from plover.steno import Stroke
 from websocket import WebSocketApp
 
-from touch_tablets.client_config import ClientConfig
-from touch_tablets.config import BASE_WORKER_FQDN, WORKER_PROTOCOL
-from touch_tablets.extended_engine import ExtendedStenoEngine
-from touch_tablets.get_logger import get_logger
-from touch_tablets.lookup import lookup
-from touch_tablets.signal import Signal
+from plover_touch_tablets.client_config import ClientConfig
+from plover_touch_tablets.config import BASE_WORKER_FQDN, WORKER_PROTOCOL
+from plover_touch_tablets.extended_engine import ExtendedStenoEngine
+from plover_touch_tablets.get_logger import get_logger
+from plover_touch_tablets.lookup import lookup
+from plover_touch_tablets.signal import Signal
 
 log = get_logger("Extension")
 
@@ -160,7 +160,7 @@ class Extension:
         def on_open(ws):
             log.info("Opened")
 
-        meta = metadata("touch-tablets")
+        meta = metadata("plover-touch-tablets")
         header = {
             "User-Agent": f"{meta['Name']}/{meta['Version']}",
             "Origin": f"{WORKER_PROTOCOL}//{BASE_WORKER_FQDN}",

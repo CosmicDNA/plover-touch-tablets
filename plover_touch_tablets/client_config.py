@@ -8,7 +8,7 @@ from nacl.public import PrivateKey
 from nacl_middleware import Nacl
 from plover.oslayer.config import CONFIG_DIR
 
-from touch_tablets.get_logger import get_logger
+from plover_touch_tablets.get_logger import get_logger
 
 log = get_logger("ClientConfig")
 
@@ -53,7 +53,7 @@ class ClientConfig:
 
         # If not found, use our own config file
         if not keys_found:
-            my_config_path = Path(CONFIG_DIR) / "touch_tablets.json"
+            my_config_path = Path(CONFIG_DIR) / "plover_touch_tablets.json"
             if my_config_path.exists():
                 try:
                     with my_config_path.open(encoding="utf-8") as config_file:
