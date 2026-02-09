@@ -9,6 +9,7 @@ dependencies = [
     "plover>=5.0.0",
     "PySide6",
     "websocket-client",
+    "jsonpickle",
     "nacl_middleware"
 ]
 

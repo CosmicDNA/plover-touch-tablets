@@ -3,8 +3,11 @@ from collections.abc import Callable
 from importlib.metadata import metadata
 from typing import Any
 
+from jsonpickle import encode
 from nacl_middleware import MailBox
 from plover.engine import StenoEngine
+from plover.gui_qt.paper_tape import TapeModel
+from plover.steno import Stroke
 from websocket import WebSocketApp
 
 from plover_my_minimal_tool.client_config import ClientConfig
@@ -21,6 +24,7 @@ SERVER_CONFIG_FILE = "plover_websocket_server_config.json"
 
 class Extension:
     engine: ExtendedStenoEngine
+    _tape_model: TapeModel
 
     def __init__(self, engine: StenoEngine):
         self.engine = ExtendedStenoEngine(engine)
@@ -30,7 +34,10 @@ class Extension:
         self._config = ClientConfig(SERVER_CONFIG_FILE)  # reload the configuration when the server is restarted
         self.mail_boxes: dict[int, MailBox] = {}
 
-    def on_stroked(self, stroke):
+        self._tape_model = TapeModel()
+        self._tape_model.reset()
+
+    def on_stroked(self, stroke: Stroke):
         # Minimal example: just log strokes
         log.info(f"Stroke: {stroke}")
 
@@ -47,9 +54,65 @@ class Extension:
     def stop(self):
         self.engine.disconnect_hooks(self)
 
-    def connect_websocket(self, connection_string: str, on_tablet_connected: Callable[[], None] | None = None):
-        # mail_box = MailBox(self._config.private_key, "tablet_public_key")
+    def _handle_tablet_connected(self, ws: WebSocketApp, tablet_id: int, public_key: str, on_tablet_connected: Callable[[], None] | None):
+        log.debug(f"Private key: {self._config.private_key} and public key: {public_key}")
+        self.mail_boxes[tablet_id] = MailBox(self._config.private_key, public_key)
+        ws.send(
+            json.dumps(
+                {
+                    "to": {"type": "tablet", "id": tablet_id},
+                    "payload": {
+                        "message": "Here is my the public key for you to privately communicate with me...",
+                        "public_key": self._config.public_key,
+                    },
+                }
+            )
+        )
+        if on_tablet_connected:
+            on_tablet_connected()
 
+    def _handle_stroke(self, ws: WebSocketApp, tablet_id: int, tablet_mail_box: MailBox, steno_keys: list):
+        try:
+            stroke = Stroke(steno_keys)
+            stroke_json = encode(stroke, unpicklable=False)
+            paper = self._tape_model._paper_format(stroke)
+
+            data = {
+                "keys": stroke.steno_keys,
+                "stroked": stroke_json,
+                "rtfcre": stroke.rtfcre,
+                "paper": paper,
+            }
+            message = {"on_stroked": data}
+
+            ws.send(
+                json.dumps(
+                    {
+                        "to": {"type": "tablet", "id": tablet_id},
+                        "payload": tablet_mail_box.box(message),
+                    }
+                )
+            )
+
+            self.engine._engine._machine_stroke_callback(steno_keys)
+        except Exception:
+            log.exception("Failed to process stroke")
+
+    def _handle_lookup(self, ws: WebSocketApp, tablet_id: int, tablet_mail_box: MailBox, text_to_lookup: str):
+        try:
+            steno_options_per_word = lookup(self.engine._engine, text_to_lookup)
+            ws.send(
+                json.dumps(
+                    {
+                        "to": {"type": "tablet", "id": tablet_id},
+                        "payload": tablet_mail_box.box({"lookup": steno_options_per_word}),
+                    }
+                )
+            )
+        except Exception:
+            log.exception("Failed to process lookup request")
+
+    def connect_websocket(self, connection_string: str, on_tablet_connected: Callable[[], None] | None = None):
         def on_message(ws: WebSocketApp, message: Any):
             if isinstance(message, str):
                 message: dict = json.loads(message)
@@ -58,62 +121,26 @@ class Extension:
             if msg_type == "tablet_connected":
                 tablet_id = message.get("id")
                 public_key = message.get("publicKey")
-                log.debug(f"Private key: {self._config.private_key} and public key: {public_key}")
-                self.mail_boxes[tablet_id] = MailBox(self._config.private_key, public_key)
-                ws.send(
-                    json.dumps(
-                        {
-                            "to": {"type": "tablet", "id": tablet_id},
-                            "payload": {
-                                "message": "Here is my the public key for you to privately communicate with me...",
-                                "public_key": self._config.public_key,
-                            },
-                        }
-                    )
-                )
-                if on_tablet_connected:
-                    on_tablet_connected()
+                self._handle_tablet_connected(ws, tablet_id, public_key, on_tablet_connected)
                 return
 
             from_data: dict = message.get("from")
-            # log.debug(f"From is {from_data}")
-            # log.debug(f"Message is:\n{json.dumps(message, indent=2)}")
             if from_data and from_data.get("type") == "tablet":
                 payload = message.get("payload")
-                # log.debug(f"Payload is: {payload}")
                 tablet_id = from_data.get("id")
-                # log.debug(f"Tablet ID is: {tablet_id}")
                 tablet_mail_box = self.mail_boxes.get(tablet_id)
                 decrypted_payload = tablet_mail_box.unbox(payload)
-                # log.debug(f"Decrypted payload is: {decrypted_payload}")
 
-                # Decrypted payload is: {'stroke': ['-R', '-B', '-G']}
                 if "stroke" in decrypted_payload:
                     steno_keys = decrypted_payload["stroke"]
                     if isinstance(steno_keys, list):
-                        try:
-                            self.engine._engine._machine_stroke_callback(steno_keys)
-                        except Exception:
-                            log.exception("Failed to process stroke")
+                        self._handle_stroke(ws, tablet_id, tablet_mail_box, steno_keys)
 
                 if "lookup" in decrypted_payload:
                     text_to_lookup = decrypted_payload["lookup"]
                     log.debug(f"Lookup request for: {text_to_lookup}")
                     if isinstance(text_to_lookup, str):
-                        try:
-                            steno_options_per_word = lookup(self.engine._engine, text_to_lookup)
-                            # ws.send_text(tablet_mail_box.box({"lookup": steno_options_per_word}))
-                            ws.send(
-                                json.dumps(
-                                    {
-                                        "to": {"type": "tablet", "id": tablet_id},
-                                        "payload": tablet_mail_box.box({"lookup": steno_options_per_word}),
-                                    }
-                                )
-                            )
-                            # log.info("Sent!")
-                        except Exception:
-                            log.exception("Failed to process lookup request")
+                        self._handle_lookup(ws, tablet_id, tablet_mail_box, text_to_lookup)
 
         def on_error(ws, error: Exception):
             log.exception(f"Error: {error}")
