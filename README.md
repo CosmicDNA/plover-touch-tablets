@@ -4,7 +4,7 @@ This Plover plugin enables seamless integration between Plover and touch-based s
 
 ## Compatibility
 
-This plugin is designed to be compatible with the **[Touch Steno Keyboard](https://github.com/CosmicDNA/touch-steno-keyboard)** application.
+This plugin is designed to be compatible with the **[Touch Steno Keyboard](https://github.com/CosmicDNA/touch-steno-keyboard)** application and the **[Plover Websocket Relay](https://github.com/CosmicDNA/plover-websocket-relay)**.
 
 ## Features
 
@@ -15,9 +15,8 @@ This plugin is designed to be compatible with the **[Touch Steno Keyboard](https
 ## Installation
 
 1. Open Plover.
-2. Navigate to the **Plugin Manager**.
-3. Install `touch-tablets`.
-4. Restart Plover.
+2. Install `touch-tablets` plugin via either plover_console CLI or plugin manager.
+3. Restart Plover.
 
 ## Usage
 
