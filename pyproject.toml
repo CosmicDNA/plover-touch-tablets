@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "plover-my-minimal-tool"
+name = "touch-tablets"
 version = "0.0.0"
 dependencies = [
     "plover>=5.0.0",
@@ -17,7 +17,7 @@ dependencies = [
 test = ["pytest"]
 
 dev = [
-    "plover-my-minimal-tool[test]", # Includes all dependencies from the 'test' group,
+    "touch-tablets[test]", # Includes all dependencies from the 'test' group,
     "pre-commit",                   # For managing pre-commit hooks
     "build",
     "bump-my-version",
@@ -26,10 +26,10 @@ dev = [
 ]
 
 [project.entry-points."plover.gui.qt.tool"]
-my_tool = "plover_my_minimal_tool.tool:Main"
+tablet_qr = "touch_tablets.tool:Main"
 
 [project.entry-points."plover.extension"]
-my_extension = "plover_my_minimal_tool.extension:Extension"
+touch_tablets = "touch_tablets.extension:Extension"
 
 [tool.bumpversion]
 current_version = "0.0.0"

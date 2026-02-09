@@ -12,7 +12,7 @@ from PySide6.QtCore import QObject, Qt, Signal
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QLabel, QVBoxLayout
 
-from plover_my_minimal_tool.config import (
+from touch_tablets.config import (
     APP_URL,
     BASE_WORKER_FQDN,
     CONNECT_SLUG,
@@ -23,12 +23,12 @@ from plover_my_minimal_tool.config import (
     TOKEN_PARAM,
     WORKER_PROTOCOL,
 )
-from plover_my_minimal_tool.encoding import encode_raw_url
-from plover_my_minimal_tool.extended_engine import ExtendedStenoEngine
-from plover_my_minimal_tool.get_logger import get_logger
+from touch_tablets.encoding import encode_raw_url
+from touch_tablets.extended_engine import ExtendedStenoEngine
+from touch_tablets.get_logger import get_logger
 
 if TYPE_CHECKING:
-    from plover_my_minimal_tool.extension import Extension
+    from touch_tablets.extension import Extension
 
 log = get_logger("Tool")
 
@@ -41,11 +41,12 @@ class Main(Tool):
     _engine: ExtendedStenoEngine
     qr: "QRCode"
     extension: "Extension"
-    tablet_connected = Signal()
+    tablet_connected = Signal(str)
+    session_id: str
 
     def __init__(self, engine: StenoEngine):
         super().__init__(engine)
-        self.tablet_connected.connect(self.close)
+        self.tablet_connected.connect(self.on_tablet_connected)
         self._engine = ExtendedStenoEngine(engine)
         log.info("Tool initialised")
 
@@ -63,6 +64,14 @@ class Main(Tool):
 
     def closeEvent(self, event):  # noqa: N802
         super().closeEvent(event)
+
+    def on_tablet_connected(self, new_token: str):
+        ws_protocol = WORKER_PROTOCOL.replace("http", "ws")
+        tablet_connection_string = f"{ws_protocol}//{BASE_WORKER_FQDN}/{SESSION_SLUG}/{self.session_id}/{JOIN_SLUG}?{TOKEN_PARAM}={new_token}"
+        log.info(f"Tablet connection string is {tablet_connection_string}")
+        final_qr_url = f"{APP_URL}/?{RELAY_PARAM}={encode_raw_url(tablet_connection_string)}"
+        log.info(final_qr_url)
+        self.qr.qr_ready.emit(final_qr_url)
 
 
 def process_data(main_tool: Main):
@@ -98,6 +107,7 @@ def process_data(main_tool: Main):
         log.info(final_qr_url)
 
         if main_tool:
+            main_tool.session_id = sessionId
             main_tool.qr.qr_ready.emit(final_qr_url)
             main_tool.extension.connect_websocket(connection_strings[0], on_tablet_connected=main_tool.tablet_connected.emit)
 

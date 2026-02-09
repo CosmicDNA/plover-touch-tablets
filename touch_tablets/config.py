@@ -1,4 +1,4 @@
-# from plover_my_minimal_tool.debug import is_debug_mode
+# from touch_tablets.debug import is_debug_mode
 
 # if is_debug_mode():
 #     PROTOCOL = "http:"
@@ -6,7 +6,7 @@
 
 WORKER_PROTOCOL = "https:"
 BASE_WORKER_FQDN = "relay.stenography.cosmicdna.co.uk"
-APP_URL = "https://tours-lifestyle-struck-hundreds.trycloudflare.com"
+APP_URL = "https://touch.stenography.cosmicdna.co.uk"
 
 SESSION_SLUG = "session"
 INITIATE_SLUG = "initiate"

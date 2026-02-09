@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING
 from plover.engine import StenoEngine
 
 if TYPE_CHECKING:
-    from plover_my_minimal_tool.extension import Extension
+    from touch_tablets.extension import Extension
 
-from plover_my_minimal_tool.signal import Signal
+from touch_tablets.signal import Signal
 
 
 class ExtendedStenoEngine:
