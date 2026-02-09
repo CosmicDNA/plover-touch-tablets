@@ -1,0 +1,29 @@
+# Touch Tablets Plover Plugin
+
+This Plover plugin enables seamless integration between Plover and touch-based steno keyboard applications running on tablets. It establishes a secure WebSocket connection, allowing your tablet to function as a steno machine for Plover.
+
+## Compatibility
+
+This plugin is designed to be compatible with the **[Touch Steno Keyboard](https://github.com/CosmicDNA/touch-steno-keyboard)** application.
+
+## Features
+
+- **Easy Pairing**: Generates a QR code within Plover for quick connection setup.
+- **Secure Connection**: Uses encryption to ensure secure communication between the tablet and Plover.
+- **Bi-directional Communication**: Supports sending steno strokes to Plover and receiving dictionary lookups/translations back on the tablet.
+
+## Installation
+
+1. Open Plover.
+2. Navigate to the **Plugin Manager**.
+3. Install `touch-tablets`.
+4. Restart Plover.
+
+## Usage
+
+1. Open Plover.
+2. Go to **Tools** > **Tablet QR**.
+3. A window will appear displaying a QR code.
+4. Open the Touch Steno Keyboard application on your tablet.
+5. Use the application to scan the QR code displayed on your computer screen.
+6. Once connected, strokes entered on the tablet will be processed by Plover.
