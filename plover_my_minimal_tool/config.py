@@ -23,6 +23,8 @@ BASE_WORKER_URL = "relay.stenography.cosmicdna.co.uk"
 INGRESS_PROTOCOL = PROTOCOL
 INGRESS_BASE_WORKER_URL = BASE_WORKER_URL
 
+APP_URL = "https://tours-lifestyle-struck-hundreds.trycloudflare.com"
+
 SESSION_SLUG = "session"
 INITIATE_SLUG = "initiate"
 CONNECT_SLUG = "connect"

@@ -13,6 +13,7 @@ from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QLabel, QVBoxLayout
 
 from plover_my_minimal_tool.config import (
+    APP_URL,
     BASE_WORKER_URL,
     CONNECT_SLUG,
     INGRESS_BASE_WORKER_URL,
@@ -23,6 +24,7 @@ from plover_my_minimal_tool.config import (
     SESSION_SLUG,
     TOKEN_PARAM,
 )
+from plover_my_minimal_tool.encoding import encode_raw_url
 from plover_my_minimal_tool.extended_engine import ExtendedStenoEngine
 from plover_my_minimal_tool.get_logger import get_logger
 
@@ -88,10 +90,16 @@ def process_data(main_tool: Main):
         ]
 
         log.info(f"Pc connection string is {connection_strings[0]}")
-        log.info(f"Tablet connection string is {connection_strings[1]}")
+
+        tablet_connection_string = connection_strings[1]
+        log.info(f"Tablet connection string is {tablet_connection_string}")
+
+        final_qr_url = f"{APP_URL}/?relay={encode_raw_url(tablet_connection_string)}"
+
+        log.info(final_qr_url)
 
         if main_tool:
-            main_tool.qr.qr_ready.emit(connection_strings[1])
+            main_tool.qr.qr_ready.emit(final_qr_url)
             main_tool.extension.connect_websocket(connection_strings[0], on_tablet_connected=main_tool.tablet_connected.emit)
 
 
