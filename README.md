@@ -26,3 +26,7 @@ This plugin is designed to be compatible with the **[Touch Steno Keyboard](https
 4. Open the Touch Steno Keyboard application on your tablet.
 5. Use the application to scan the QR code displayed on your computer screen.
 6. Once connected, strokes entered on the tablet will be processed by Plover.
+
+## Powered by
+![Python](https://img.shields.io/badge/Python-repo?logo=python&color=black&style=for-the-badge)
+![Plover](https://img.shields.io/badge/Plover-repo?logo=plover&color=black&style=for-the-badge)
