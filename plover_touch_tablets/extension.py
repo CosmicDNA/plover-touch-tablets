@@ -1,4 +1,5 @@
 import json
+import threading  # <-- added
 from collections.abc import Callable
 from importlib.metadata import metadata
 from typing import Any
@@ -25,20 +26,46 @@ SERVER_CONFIG_FILE = "plover_websocket_server_config.json"
 class Extension:
     engine: ExtendedStenoEngine
     _tape_model: TapeModel
+    _keep_alive_timer: threading.Timer | None = None  # <-- added
 
     def __init__(self, engine: StenoEngine):
         self.engine = ExtendedStenoEngine(engine)
         engine.my_minimal_extension = self
 
         self.engine.signals = [Signal("stroked"), Signal("translated")]
-        self._config = ClientConfig(SERVER_CONFIG_FILE)  # reload the configuration when the server is restarted
+        self._config = ClientConfig(SERVER_CONFIG_FILE)
         self.mail_boxes: dict[int, MailBox] = {}
 
         self._tape_model = TapeModel()
         self._tape_model.reset()
 
+    # ---------- keep‑alive methods ----------
+    def _send_keep_alive(self, ws: WebSocketApp):
+        """Send a ping and schedule the next one."""
+        if ws.sock and ws.sock.connected:
+            try:
+                ws.send(json.dumps({"type": "ping"}))
+                log.debug("Sent keep‑alive ping")
+            except Exception:
+                log.exception("Failed to send keep‑alive ping")
+        self._schedule_keep_alive(ws)
+
+    def _schedule_keep_alive(self, ws: WebSocketApp):
+        """Cancel any existing timer and start a new one."""
+        self._cancel_keep_alive()
+        self._keep_alive_timer = threading.Timer(30.0, self._send_keep_alive, args=[ws])
+        self._keep_alive_timer.daemon = True
+        self._keep_alive_timer.start()
+
+    def _cancel_keep_alive(self):
+        """Cancel the keep‑alive timer if it exists."""
+        if self._keep_alive_timer:
+            self._keep_alive_timer.cancel()
+            self._keep_alive_timer = None
+
+    # ----------------------------------------
+
     def on_stroked(self, stroke: Stroke):
-        # Minimal example: just log strokes
         log.info(f"Stroke: {stroke}")
 
     def on_translated(self, old, new):
@@ -47,8 +74,6 @@ class Extension:
 
     def start(self):
         log.info("Extension initialised")
-
-        # Example: Connect to stroke signals
         self.engine.connect_hooks(self)
 
     def stop(self):
@@ -155,9 +180,11 @@ class Extension:
             log.exception(f"Error: {error}")
 
         def on_close(ws, close_status_code, close_msg):
+            self._cancel_keep_alive()  # <-- stop timer
             log.info("Closed")
 
         def on_open(ws):
+            self._schedule_keep_alive(ws)  # <-- start periodic pings
             log.info("Opened")
 
         meta = metadata("plover-touch-tablets")
@@ -167,5 +194,12 @@ class Extension:
             "X-Public-Key": self._config.public_key,
         }
         log.info(header)
-        ws = WebSocketApp(connection_string, on_open=on_open, on_message=on_message, on_error=on_error, on_close=on_close, header=header)
+        ws = WebSocketApp(
+            connection_string,
+            on_open=on_open,
+            on_message=on_message,
+            on_error=on_error,
+            on_close=on_close,
+            header=header,
+        )
         ws.run_forever(reconnect=5)
