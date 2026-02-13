@@ -55,7 +55,7 @@ class Extension:
 
         try:
             self._ws.send(json.dumps({"type": "ping"}))
-            log.info("✅ Sent idle keep‑alive ping")
+            log.debug("✅ Sent idle keep‑alive ping")
             # No need to call _update_last_sent() – it's already called by wrapped_send
         except Exception:
             log.exception("❌ Failed to send ping")
@@ -211,12 +211,12 @@ class Extension:
             log.exception(f"Error: {error}")
 
         def on_close(ws: WebSocketApp, close_status_code, close_msg):
-            log.info("🔌 WebSocket CLOSED – stopping idle timer")
+            log.debug("🔌 WebSocket CLOSED – stopping idle timer")
             self._stop_keep_alive()
             self._ws = None
 
         def on_open(ws: WebSocketApp):
-            log.info("🔌 WebSocket OPENED – starting idle timer")
+            log.debug("🔌 WebSocket OPENED – starting idle timer")
             self._ws = ws
 
             original_send = ws.send
