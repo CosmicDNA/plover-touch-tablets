@@ -13,7 +13,9 @@ dependencies = [
     "PySide6",
     "websocket-client",
     "jsonpickle",
-    "nacl_middleware"
+    "nacl_middleware",
+    "qrcode[pil]",
+    "requests"
 ]
 
 [project.optional-dependencies]
